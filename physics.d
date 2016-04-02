@@ -10,24 +10,30 @@ import std.math;
 import arsd.color;
 
 // Gravity constant
-immutable G = 6.67*10.^^-11;
+//immutable G = 6.67*10.^^-11;
+immutable G = 6.67*10.^^-5;
 
 struct Coord {
     union {
-        int[2] vector;
+        real[2] vector = [0, 0];
 
         struct {
-            int x;
-            int y;
+            real x;
+            real y;
         }
     }
 
-    this(int x, int y) pure {
+    this(real x, real y) pure {
         this.x = x;
         this.y = y;
     }
 
-    this(int[] arr) pure {
+    this(int x, int y) pure {
+        this.x = x.to!real;
+        this.y = y.to!real;
+    }
+
+    this(real[] arr) pure {
         this.vector[] = arr;
     }
 
@@ -51,8 +57,8 @@ unittest {
 }
 
 struct Body {
-    uint  mass;
-    uint  radius;
+    real  mass;
+    real  radius;
     Coord position;
     Coord momentum;
     Color color;
@@ -61,7 +67,7 @@ struct Body {
     // May allow some nicer APIs
     alias position this;
 
-    this(Coord position, uint radius, uint mass,
+    this(Coord position, real radius, real mass,
          Coord momentum    = Coord(),
          Color color       = Color.blue,
          Color trace_color = Color.red) {
@@ -80,18 +86,16 @@ struct Body {
 
         Body result = this;
 
-        Coord new_position = vector[].map!(x => momentum.x * t + x)
-                                     .array.Coord;
+        result.position = zip(this.vector[], momentum.vector[])
+                            .map!(tup => tup[0] + tup[1] * t)
+                            .array.Coord;
 
-        Coord new_momentum = bodies.map!(b => gravitation(b, this))
-                                   .reduce!sum
-                                   .vector[]
-                                   .map!(x => round(x / mass).to!int)
-                                   .array.Coord
-                                   .sum(momentum);
-
-        result.position = new_position;
-        result.momentum = new_momentum;
+        result.momentum = bodies.map!(b => gravitation(b, this))
+                                .reduce!sum
+                                .vector[]
+                                .map!(x => x / mass)
+                                .array.Coord
+                                .sum(momentum);
 
         return result;
     }
@@ -122,12 +126,21 @@ Coord gravitation(Body from, Body to) {
         return Coord();
 
     Coord result;
+
+    debug {
+        writeln("from: ", from);
+        writeln("to:   ", to);
+        writeln(from.x - to.x);
+    }
+
     result = zip(from.vector[], to.vector[])
                     .map!(t => sgn(t[0] - t[1])
                                * G * from.mass * to.mass
-                               / (t[0] - t[1]) ^^ 2)
-                    .map!(x => round(x).to!int)
+                               / ((t[0] - t[1]) ^^ 2))
                     .array.Coord;
+
+    debug result.writeln;
+
     return result;
 }
 

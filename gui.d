@@ -21,12 +21,14 @@ void main(string[] args) {
 
         painter.outlineColor = Color.black;
         painter.fillColor    = b.color;
-        painter.drawEllipse(Point(b.x-b.radius.to!int, b.y-b.radius.to!int),
-                            Point(b.x+b.radius.to!int, b.y+b.radius.to!int));
+        painter.drawEllipse(Point((b.x-b.radius).to!int,
+                                  (b.y-b.radius).to!int),
+                            Point((b.x+b.radius).to!int,
+                                  (b.y+b.radius).to!int));
     }
 
     void drawSpace(Space space) {
-        debug writeln("Redrawing universe: ", space.bodies);
+        debug writeln("Drawing space: ", space.bodies);
         auto painter = window.draw();
 
         painter.outlineColor = Color.black;
@@ -35,12 +37,17 @@ void main(string[] args) {
     }
 
     drawSpace(space);
-    space.bodies ~= Body(Coord(270, 190), 30, 10);
-    space.bodies.writeln;
+    debug {
+        space.bodies ~= Body(Coord(270, 190), 30, 1000);
+        space.bodies ~= Body(Coord(190, 270), 30, 1000);
+    }
     space.bodies.each!drawBody;
 
-    window.eventLoop(1000,
+    window.eventLoop(100,
         delegate () {
+            space.advance_by(100);
+            drawSpace(space);
+            space.bodies.each!drawBody;
         },
         delegate (MouseEvent ev) {
             debug ev.writeln;
@@ -49,7 +56,7 @@ void main(string[] args) {
                 addingBody = true;
 
                 debug writeln("Making ", temp_body);
-                temp_body = Body(Coord(ev.x, ev.y), 10, 1);
+                temp_body = Body(Coord(ev.x, ev.y), 1, 1000);
                 return;
             }
 

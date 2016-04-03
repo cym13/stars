@@ -10,7 +10,7 @@ import physics;
 import simpledisplay;
 
 void main(string[] args) {
-    auto  window = new SimpleWindow(Size(600, 600), "Oh My Stars");
+    auto  window = new SimpleWindow(Size(1000, 700), "Oh My Stars");
     Space space;
 
     void drawBody(Body b) {
@@ -36,9 +36,9 @@ void main(string[] args) {
 
     drawSpace();
     debug {
-        space.bodies ~= Body(Coord(290, 120), 50, 5000);
-        space.bodies ~= Body(Coord(190, 300), 50, 5000);
-        space.bodies ~= Body(Coord(290, 460), 50, 5000);
+        space.bodies ~= Body(Coord(290, 120), 50, 1500);
+        space.bodies ~= Body(Coord(190, 300), 50, 1500);
+        space.bodies ~= Body(Coord(290, 460), 50, 1500);
     }
     space.bodies.each!drawBody;
 
@@ -73,12 +73,12 @@ void main(string[] args) {
                 addingBody = true;
 
                 debug writeln("Making ", temp_body);
-                temp_body = Body(Coord(ev.x, ev.y), 1, 1000);
+                temp_body = Body(Coord(ev.x, ev.y), 1, 1);
                 return;
             }
 
             if (ev.type == MouseEventType.buttonReleased && addingBody) {
-                temp_body.mass = temp_body.radius * 100;
+                temp_body.mass = temp_body.radius * 300;
                 debug writeln("Inserting ", temp_body);
                 space.bodies ~= temp_body;
                 addingBody = false;

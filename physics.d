@@ -10,8 +10,7 @@ import std.math;
 import arsd.color;
 
 // Gravity constant
-//immutable G = 6.67*10.^^-11;
-immutable G = 6.67*10.^^-7;
+immutable G = 6.67*10.^^-5;
 
 struct Coord {
     union {
@@ -60,7 +59,7 @@ struct Body {
     real   mass;
     real   radius;
     Coord  position;
-    Coord  momentum;
+    Coord  velocity;
     Color  color;
     Color  trace_color;
     string name;
@@ -70,7 +69,7 @@ struct Body {
     alias position this;
 
     this(Coord position, real radius, real mass,
-         Coord momentum    = Coord(),
+         Coord velocity    = Coord(),
          Color color       = Color.blue,
          Color trace_color = Color.red) {
         assert(mass   != 0);
@@ -79,7 +78,7 @@ struct Body {
         this.mass     = mass;
         this.radius   = radius;
         this.position = position;
-        this.momentum = momentum;
+        this.velocity = velocity;
         this.color    = color;
         this.name     = "Body_" ~ counter.to!string;
 
@@ -91,15 +90,13 @@ struct Body {
 
         Body result = this;
 
-        result.position.vector[] = vector[]
-                                 + momentum.vector[] * t * this.mass/1000;
+        result.position.vector[] = vector[] + velocity.vector[] * t / mass;
 
-        result.momentum = bodies.map!(b => gravitation(b, this))
+        result.velocity = bodies.map!(b => gravitation(b, this))
                                 .reduce!sum
                                 .vector[]
-                                .map!(x => x / mass)
                                 .array.Coord
-                                .sum(momentum);
+                                .sum(velocity);
 
         return result;
     }
@@ -109,7 +106,7 @@ struct Body {
         return name ~ "(position=" ~ position.to!string
                 ~ ", radius="      ~ radius.to!string
                 ~ ", mass="        ~ mass.to!string
-                ~ ", momentum="    ~ momentum.to!string
+                ~ ", velocity="    ~ velocity.to!string
                 ~ ", color="       ~ color.to!string
                 ~ ", trace_color=" ~ trace_color.to!string
                 ~ ")";
@@ -128,11 +125,13 @@ struct Space {
         foreach (i, ref a; new_bodies) foreach (ref b ; new_bodies[i+1..$]) {
             if (collide(a, b)) {
                 debug writeln("Collision! ", a, " ", b);
-                auto a_momentum = a.momentum.vector.dup;
-                auto b_momentum = b.momentum.vector.dup;
+                auto a_velocity = a.velocity.vector.dup;
+                auto b_velocity = b.velocity.vector.dup;
 
-                a.momentum.vector[] += b_momentum[] - a_momentum[];
-                b.momentum.vector[] += a_momentum[] - b_momentum[];
+                a.velocity.vector[] += (b_velocity[] - a_velocity[])
+                                     * (b.mass / a.mass);
+                b.velocity.vector[] += (a_velocity[] - b_velocity[])
+                                     * (a.mass / b.mass);
             }
         }
 

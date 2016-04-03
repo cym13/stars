@@ -68,10 +68,9 @@ struct Body {
 
     alias position this;
 
-    this(Coord position, real radius, real mass,
-         Coord velocity    = Coord(),
-         Color color       = Color.blue,
-         Color trace_color = Color.red) {
+    this(Coord position, real radius, real mass, Coord velocity=Coord()) {
+        import std.random: uniform;
+
         assert(mass   != 0);
         assert(radius != 0);
 
@@ -79,7 +78,7 @@ struct Body {
         this.radius   = radius;
         this.position = position;
         this.velocity = velocity;
-        this.color    = color;
+        this.color    = Color(uniform(0, 255), uniform(0, 255), uniform(0, 255));
         this.name     = "Body_" ~ counter.to!string;
 
         counter++;

@@ -12,9 +12,10 @@ import simpledisplay;
 // TODO: add save/load
 // TODO: better config
 // TODO: cli interface
+// TODO: add the possibility to grab celestial bodies
 
 void main(string[] args) {
-    auto  window = new SimpleWindow(Size(1000, 700), "Oh My Stars");
+    auto  window = new SimpleWindow(Size(1200, 700), "Oh My Stars");
     Space space;
 
     void drawBody(Body b) {

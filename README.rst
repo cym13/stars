@@ -13,6 +13,15 @@ concentrate matter.
 You can use Space to reset the universe and P to pause/continue the
 simulation.
 
+Building
+========
+
+You may use anoter D compiler, it's tested with DMDv2.070.
+
+.. code:: shell
+
+    dmd -O -ofstars *.d
+
 License
 =======
 

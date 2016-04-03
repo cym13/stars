@@ -9,6 +9,10 @@ import std.algorithm;
 import physics;
 import simpledisplay;
 
+// TODO: add save/load
+// TODO: better config
+// TODO: cli interface
+
 void main(string[] args) {
     auto  window = new SimpleWindow(Size(1000, 700), "Oh My Stars");
     Space space;
@@ -62,14 +66,12 @@ void main(string[] args) {
             space.advance_by(10);
 
             if (redraw_counter++ == 50) {
-                drawSpace();
+                drawSpace;
                 redraw_counter = 0;
             }
             space.bodies.each!drawBody;
         },
         delegate (MouseEvent ev) {
-            debug ev.writeln;
-
             if (ev.type == MouseEventType.buttonPressed && !addingBody) {
                 addingBody = true;
 
@@ -114,11 +116,6 @@ void main(string[] args) {
                 pause = !pause;
                 debug writeln("Pause: ", pause);
                 return;
-            }
-
-            debug
-            if (ev.key == Key.M) {
-                writeln("MARKER");
             }
         },
     );

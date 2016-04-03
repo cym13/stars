@@ -11,7 +11,7 @@ import arsd.color;
 
 // Gravity constant
 //immutable G = 6.67*10.^^-11;
-immutable G = 6.67*10.^^-5;
+immutable G = 6.67*10.^^-7;
 
 struct Coord {
     union {
@@ -57,14 +57,16 @@ unittest {
 }
 
 struct Body {
-    real  mass;
-    real  radius;
-    Coord position;
-    Coord momentum;
-    Color color;
-    Color trace_color;
+    real   mass;
+    real   radius;
+    Coord  position;
+    Coord  momentum;
+    Color  color;
+    Color  trace_color;
+    string name;
 
-    // May allow some nicer APIs
+    static uint counter;
+
     alias position this;
 
     this(Coord position, real radius, real mass,
@@ -79,6 +81,9 @@ struct Body {
         this.position = position;
         this.momentum = momentum;
         this.color    = color;
+        this.name     = "Body_" ~ counter.to!string;
+
+        counter++;
     }
 
     Body advance_by(Body[] bodies, int t=10) {
@@ -86,9 +91,8 @@ struct Body {
 
         Body result = this;
 
-        result.position = zip(this.vector[], momentum.vector[])
-                            .map!(tup => tup[0] + tup[1] * t)
-                            .array.Coord;
+        result.position.vector[] = vector[]
+                                 + momentum.vector[] * t * this.mass/1000;
 
         result.momentum = bodies.map!(b => gravitation(b, this))
                                 .reduce!sum
@@ -102,13 +106,13 @@ struct Body {
 
     string toString() {
         import std.format;
-        return "Body(position=" ~ position.to!string
-             ~ ", radius="      ~ radius.to!string
-             ~ ", mass="        ~ mass.to!string
-             ~ ", momentum="    ~ momentum.to!string
-             ~ ", color="       ~ color.to!string
-             ~ ", trace_color=" ~ trace_color.to!string
-             ~ ")";
+        return name ~ "(position=" ~ position.to!string
+                ~ ", radius="      ~ radius.to!string
+                ~ ", mass="        ~ mass.to!string
+                ~ ", momentum="    ~ momentum.to!string
+                ~ ", color="       ~ color.to!string
+                ~ ", trace_color=" ~ trace_color.to!string
+                ~ ")";
     }
 }
 
@@ -116,8 +120,28 @@ struct Space {
     Body[] bodies;
     Color  color = Color.black;
 
+    alias bodies this;
+
     void advance_by(int t=10) {
-        bodies = bodies.map!(b => b.advance_by(bodies, t)).array;
+        auto new_bodies = bodies.map!(b => b.advance_by(bodies, t)).array;
+
+        foreach (i, ref a; new_bodies) foreach (ref b ; new_bodies[i+1..$]) {
+            if (collide(a, b)) {
+                debug writeln("Collision! ", a, " ", b);
+                auto a_momentum = a.momentum.vector.dup;
+                auto b_momentum = b.momentum.vector.dup;
+
+                a.momentum.vector[] += b_momentum[] - a_momentum[];
+                b.momentum.vector[] += a_momentum[] - b_momentum[];
+            }
+        }
+
+        bodies = new_bodies;
+    }
+
+    string toString() {
+        return "Space(bodies=" ~ bodies.map!(to!string).join("\n")
+                 ~ ", color="  ~ color.to!string ~ ")";
     }
 }
 
@@ -127,19 +151,15 @@ Coord gravitation(Body from, Body to) {
 
     Coord result;
 
+    result.vector[] = (from.vector[] - to.vector[])
+                    * G * from.mass * to.mass
+                    / (distance(from, to) ^^ 2);
+
     debug {
+        writeln("gravity: ", result, " ; norm: ", result.norm);
         writeln("from: ", from);
-        writeln("to:   ", to);
-        writeln(from.x - to.x);
+        writeln("  to: ", to);
     }
-
-    result = zip(from.vector[], to.vector[])
-                    .map!(t => sgn(t[0] - t[1])
-                               * G * from.mass * to.mass
-                               / ((t[0] - t[1]) ^^ 2))
-                    .array.Coord;
-
-    debug result.writeln;
 
     return result;
 }

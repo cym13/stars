@@ -10,16 +10,14 @@ import physics;
 import simpledisplay;
 
 void main(string[] args) {
-    auto window = new SimpleWindow(Size(600, 600), "My D App");
-
+    auto  window = new SimpleWindow(Size(600, 600), "Oh My Stars");
     Space space;
-    bool  addingBody;
-    Body  temp_body;
 
     void drawBody(Body b) {
         auto painter = window.draw();
 
         painter.outlineColor = Color.black;
+
         painter.fillColor    = b.color;
         painter.drawEllipse(Point((b.x-b.radius).to!int,
                                   (b.y-b.radius).to!int),
@@ -27,7 +25,7 @@ void main(string[] args) {
                                   (b.y+b.radius).to!int));
     }
 
-    void drawSpace(Space space) {
+    void drawSpace() {
         debug writeln("Drawing space: ", space.bodies);
         auto painter = window.draw();
 
@@ -36,17 +34,36 @@ void main(string[] args) {
         painter.drawRectangle(Point(0, 0), window.width, window.height);
     }
 
-    drawSpace(space);
+    drawSpace();
     debug {
-        space.bodies ~= Body(Coord(270, 190), 30, 1000);
-        space.bodies ~= Body(Coord(190, 270), 30, 1000);
+        space.bodies ~= Body(Coord(290, 120), 50, 5000);
+        space.bodies ~= Body(Coord(190, 300), 50, 5000);
+        space.bodies ~= Body(Coord(290, 460), 50, 5000);
     }
     space.bodies.each!drawBody;
 
+    void reset() {
+        space = Space();
+        drawSpace;
+    }
+
+    bool pause;
+    Body temp_body;
+    bool addingBody;
+    uint redraw_counter;
+
     window.eventLoop(100,
         delegate () {
-            space.advance_by(100);
-            drawSpace(space);
+            if (pause)
+                return;
+
+            space.bodies.each!drawBody;
+            space.advance_by(10);
+
+            if (redraw_counter++ == 50) {
+                drawSpace();
+                redraw_counter = 0;
+            }
             space.bodies.each!drawBody;
         },
         delegate (MouseEvent ev) {
@@ -61,10 +78,11 @@ void main(string[] args) {
             }
 
             if (ev.type == MouseEventType.buttonReleased && addingBody) {
+                temp_body.mass = temp_body.radius * 100;
                 debug writeln("Inserting ", temp_body);
                 space.bodies ~= temp_body;
                 addingBody = false;
-                drawSpace(space);
+                drawSpace();
                 space.bodies.each!drawBody;
                 return;
             }
@@ -76,6 +94,27 @@ void main(string[] args) {
                                             .round.to!uint;
                 drawBody(temp_body);
                 return;
+            }
+        },
+        delegate (KeyEvent ev) {
+            if (!ev.pressed)
+                return;
+
+            if (ev.key == Key.Space) {
+                reset;
+                debug writeln("Reset");
+                return;
+            }
+
+            if (ev.key == Key.P) {
+                pause = !pause;
+                debug writeln("Pause: ", pause);
+                return;
+            }
+
+            debug
+            if (ev.key == Key.M) {
+                writeln("MARKER");
             }
         },
     );

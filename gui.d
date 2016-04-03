@@ -51,6 +51,7 @@ void main(string[] args) {
     Body temp_body;
     bool addingBody;
     uint redraw_counter;
+    real max_radius;
 
     window.eventLoop(100,
         delegate () {
@@ -78,7 +79,7 @@ void main(string[] args) {
             }
 
             if (ev.type == MouseEventType.buttonReleased && addingBody) {
-                temp_body.mass = temp_body.radius * 300;
+                temp_body.mass = max_radius * 300;
                 debug writeln("Inserting ", temp_body);
                 space.bodies ~= temp_body;
                 addingBody = false;
@@ -92,6 +93,9 @@ void main(string[] args) {
 
                 temp_body.radius = temp_body.distance(Coord(ev.x, ev.y))
                                             .round.to!uint;
+
+                max_radius = max(temp_body.radius, max_radius);
+
                 drawBody(temp_body);
                 return;
             }

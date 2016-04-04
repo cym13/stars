@@ -13,6 +13,9 @@ concentrate matter.
 You can use Space to reset the universe and P to pause/continue the
 simulation.
 
+Clicking on a star will stop it, only one star can be stopped a time.
+Clicking on it again will release the star.
+
 Building
 ========
 

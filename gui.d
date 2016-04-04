@@ -21,7 +21,6 @@ void main(string[] args) {
         auto painter = window.draw();
 
         painter.outlineColor = Color.black;
-
         painter.fillColor    = b.color;
         painter.drawEllipse(Point((b.x-b.radius).to!int,
                                   (b.y-b.radius).to!int),
@@ -109,6 +108,10 @@ void main(string[] args) {
 
             if (ev.type == MouseEventType.buttonReleased && addingBody) {
                 temp_body.mass = max_radius * 300;
+
+                if (temp_body.mass.isNaN)
+                    return;
+
                 debug writeln("Inserting ", temp_body);
                 space.bodies ~= temp_body;
                 addingBody = false;

@@ -101,15 +101,23 @@ struct Body {
         return result;
     }
 
+    void start() {
+        stopped = false;
+    }
+
+    void stop() {
+        stopped = true;
+    }
+
     string toString() {
         import std.format;
-        return name ~ "(position=" ~ position.to!string
-                ~ ", radius="      ~ radius.to!string
-                ~ ", mass="        ~ mass.to!string
-                ~ ", velocity="    ~ velocity.to!string
-                ~ ", color="       ~ color.to!string
-                ~ ", trace_color=" ~ trace_color.to!string
-                ~ ")";
+        return name ~ "(position="  ~ position.to!string
+                    ~ ", radius="   ~ radius.to!string
+                    ~ ", mass="     ~ mass.to!string
+                    ~ ", velocity=" ~ velocity.to!string
+                    ~ ", color="    ~ color.to!string
+                    ~ ", stopped="  ~ stopped.to!string
+                    ~ ")";
     }
 }
 

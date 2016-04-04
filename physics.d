@@ -61,8 +61,8 @@ struct Body {
     Coord  position;
     Coord  velocity;
     Color  color;
-    Color  trace_color;
     string name;
+    bool   stopped;
 
     static uint counter;
 
@@ -89,7 +89,8 @@ struct Body {
 
         Body result = this;
 
-        result.position.vector[] = vector[] + velocity.vector[] * t / mass;
+        if (!stopped)
+            result.position.vector[] += velocity.vector[] * t / mass;
 
         result.velocity = bodies.map!(b => gravitation(b, this))
                                 .reduce!sum

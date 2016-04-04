@@ -12,7 +12,6 @@ import simpledisplay;
 // TODO: add save/load
 // TODO: better config
 // TODO: cli interface
-// TODO: add the possibility to grab celestial bodies
 
 void main(string[] args) {
     auto  window = new SimpleWindow(Size(1200, 700), "Oh My Stars");
@@ -52,27 +51,54 @@ void main(string[] args) {
         drawSpace;
     }
 
+    auto isOnStar(ulong x, ulong y) {
+        foreach (ref b ; space.bodies)
+            if (distance(b, Coord(x, y)) <= b.radius)
+                return &b;
+        return null;
+    }
+
     bool pause;
     Body temp_body;
     bool addingBody;
     uint redraw_counter;
     real max_radius;
 
+    Body* grabed;
+
     window.eventLoop(100,
         delegate () {
             if (pause)
                 return;
-
-            space.bodies.each!drawBody;
-            space.advance_by(10);
 
             if (redraw_counter++ == 50) {
                 drawSpace;
                 redraw_counter = 0;
             }
             space.bodies.each!drawBody;
+            space.advance_by(10);
+
         },
         delegate (MouseEvent ev) {
+            if (ev.type == MouseEventType.buttonPressed) {
+                auto starClicked = isOnStar(ev.x, ev.y);
+
+                if (starClicked) {
+                    if (grabed && starClicked.name == grabed.name) {
+                        starClicked.start;
+                        grabed = null;
+                    }
+
+                    else {
+                        if (grabed)
+                            grabed.start;
+                        grabed = starClicked;
+                        starClicked.stop;
+                    }
+                    return;
+                }
+            }
+
             if (ev.type == MouseEventType.buttonPressed && !addingBody) {
                 addingBody = true;
 

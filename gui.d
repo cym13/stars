@@ -7,7 +7,7 @@ import std.array;
 import std.algorithm;
 
 import physics;
-import simpledisplay;
+import arsd.simpledisplay;
 
 // TODO: add save/load
 // TODO: better config
